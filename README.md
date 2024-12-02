@@ -1,5 +1,5 @@
 # stTrace
-## The stTrace algorithm is used to identify spatial-temporal domains and reconstruct developmental trajectories, please running stTrace.ipynb with python. 
+Please running stTrace.ipynb with python. 
 ```python
 # Import necessary libraries
 from PIL import Image
@@ -43,4 +43,10 @@ import random
 import scanpy as sc
 
 from sklearn.cluster import AgglomerativeClustering
+'''
+
+### Please enter the folder path of the file and the file name
+```python
+data_path = 'the folder path of the file'
+count_file ='the file name.h5'
 '''
