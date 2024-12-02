@@ -1176,7 +1176,7 @@ for i in linkage_result.index:
 ```
 ```python
 for i in result['result'].unique():
-    plt.scatter(coor['imagecol'], coor['imagerow'],c = result['result'],alpha=0.5,s=0.3,label = sr_re['re'])
+    plt.scatter(coor['imagecol'], coor['imagerow'],c = result['result'],alpha=0.5,s=0.3,label = result['result'])
     plt.scatter(coor['imagecol'][list(cluster_cell[i])], 
                 coor['imagerow'][list(cluster_cell[i])],
                 s = 3)
@@ -1192,4 +1192,8 @@ for i in result['result'].unique():
     plt.savefig(save_path,dpi=300)
     plt.title(i)
     plt.show()
+```
+``` python
+result.index = adata.obs['in_tissue'].index
+result['result'].to_csv('stTrace_cluster_result.csv', index=True, encoding='utf-8') 
 ```
