@@ -1043,7 +1043,7 @@ while True:
         result.loc[i]['result'] = louvain_iter_num
     plt.scatter(coor['imagecol'], coor['imagerow'],c = result['result'],s=3,label = result['result'])
 
-    filename = f"weight_{weight}_iter_{louvain_iter_num}.png"
+    filename = f"weight_{weight_sc}_iter_{louvain_iter_num}.png"
     
     
     plot_folder_path=os.path.join(data_path, 'results_plot')
