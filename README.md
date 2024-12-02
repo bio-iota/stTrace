@@ -45,7 +45,7 @@ import scanpy as sc
 from sklearn.cluster import AgglomerativeClustering
 ```
 
-Please enter the folder path of the file and the file name
+Please enter the folder path of the file, the file name and set the weight parameter.
 ```python
 data_path = 'the folder path of the file'
 count_file ='the file name.h5'
@@ -60,7 +60,7 @@ weight_corr = 0.1
 ```
 ## Dara Processing
 ### Load Data
-```
+```python
 def read_10X_Visium(path, 
                     genome=None,
                     count_file=count_file, 
@@ -95,18 +95,18 @@ def read_10X_Visium(path,
     adata.uns["spatial"][library_id]["use_quality"] = quality
     return adata
 ```
-``` 
+``` python
 adata = read_10X_Visium(data_path)
 adata
 ```
-``` 
+``` python
 # save spatial location
 # spatial location
 coor = pd.DataFrame(adata.obs['imagecol'])
 coor['imagerow'] = adata.obs['imagerow']
 ```
 ### Extract image feature
-``` 
+``` python
 # slice path of image feature
 def image_crop(
         adata,
@@ -251,7 +251,7 @@ class image_feature:
             print("The pca result of image feature is added to adata.obsm['image_feat_pca'] !")
         return self.adata 
 ```
-``` 
+``` python
 save_path=os.path.join(data_path, 'image_slice_result')
 if not os.path.exists(save_path):
     os.mkdir(save_path)
@@ -260,7 +260,7 @@ crop_adata = image_crop(adata, save_path)
 feature_adata = image_feature(crop_adata).extract_image_feat()
 ```
 ### Spatial Weight/ Gene Correlation/ Morphological Similarity
-``` 
+``` python
 # SW 
 def cal_spatial_weight(
     data,
@@ -376,7 +376,7 @@ def cal_weight_matrix(
         print("The weight result of image feature is added to adata.obsm['weights_matrix_nomd'] !")
     return adata
 ```
-```
+```python
 # adjacency matrix
 def find_adjacent_spot(
     adata,
@@ -496,7 +496,7 @@ def get_augment(
     return adata_augment
 
 ```
-``` 
+```python
 data_proc = get_augment(feature_adata)
 enhanced_gene = pd.DataFrame(data_proc.obsm['augment_gene_data'])
 ```
@@ -524,17 +524,17 @@ def get_affinity(X,n_neighbors):
     M_df = pd.DataFrame(aff_m)
     return M_df
 ```
-```
+```python
 enhanced_input_graphm = get_affinity(enhanced_gene, 30)
 ```
-```
+```python
 sr_matrix.index = enhanced_input_graphm.index 
 sr_matrix.columns = enhanced_input_graphm.index 
 sr.index = enhanced_input_graphm.index
 coor.index = enhanced_input_graphm.index
 ```
 ### Detect functional similar and spatial continuous region by Structure Entropy
-```
+```python
 def get_result(result_df, result):
     for i in result.keys():    
         result_df[i] = 0
@@ -546,7 +546,7 @@ def get_result(result_df, result):
                     result_df[i][result_df[i-1]== n] = m
     return result_df
 ```
-```
+```python
 def load_graph(neighbour_matrix, edge_matrix):
     G = collections.defaultdict(dict)
     for i in neighbour_matrix.index:
@@ -717,11 +717,11 @@ class Louvain_se():
 
         return self.get_communities(),result,iter_time
 ```
-```
+```python
 sample_select_number = len(enhanced_gene.index)*0.8
 ```
 
-```
+```python
 def get_confidence_matrix(matrix_df, result,iter_num):
     for i in result[iter_num].keys():    
         matrix_df.fillna(0, inplace = True)
@@ -731,7 +731,7 @@ def get_confidence_matrix(matrix_df, result,iter_num):
     return matrix_df
 ```
 
-```
+```python
 louvain_se_results = {}
 for i in range(1,11):
     consensus_list = random.sample(list(enhanced_gene.index), int(sample_select_number))
@@ -770,7 +770,7 @@ se_confidence_score = pd.DataFrame(se_confidence_value,
 
 ```
 ### Temporal continuous region from development degree
-```
+```python
 class Vertex_sr():
     def __init__(self, vid, cid, nodes):
         self._vid = vid
@@ -923,7 +923,7 @@ class Louvain_sc():
         return self.get_communities(),result
 ```
 
-```
+```python
 louvain_sc_results = {}
 for i in range(1,11):
     consensus_list = random.sample(list(enhanced_gene.index), int(sample_select_number))
@@ -958,13 +958,13 @@ sc_confidence_score = pd.DataFrame(sc_confidence_value,
                                     index=sc_confidence_dia.index)
 
 ```
-```
+```python
 # parameter: weight_sc = 0.8
 confidence_score = weight_sc *sc_confidence_score + (1-weight_sc)*se_confidence_score
 symmetric_confidence_score = (confidence_score+confidence_score.T)/2
 ```
 ## Iterative Refine Spatial-Temporal Domain
-```
+```python
 def consensus(neighbour, chcid, result_df, max):
 
     consensus_result = result_df.copy()
@@ -983,7 +983,7 @@ def consensus(neighbour, chcid, result_df, max):
     return consensus_result
 
 ```
-```
+```python
 else_index = enhanced_input_graphm.index
 louvain_iter_num = 0
 result  = pd.DataFrame(index = coor.index)
@@ -1061,7 +1061,7 @@ while True:
         break
 ```
 ## Reconstruction of developmental path
-```
+```python
 pca = PCA(n_components=1)
 pcage = pd.DataFrame(columns=enhanced_gene.columns)
 for i in result['result'].unique():
@@ -1075,14 +1075,14 @@ correlation_pcage = 1 - pairwise_distances(pcage, metric = 'cosine')
 correlation_pcage = pd.DataFrame(correlation_pcage,index = pcage.index, columns=pcage.index).sort_index(axis=0).sort_index(axis=1)
 correlation_pcage
 ```
-```
+```python
 sr.index = coor.index
 result['imagecol'] = coor['imagecol']
 result['imagerow'] = coor['imagerow']
 result['SR'] = sr['SR']
 average_sr_by_superid = pd.DataFrame(result.groupby('result')['SR'].mean())
 ```
-```
+```python
 coordinates = result[['imagecol', 'imagerow']].values  
 labels = result['result'].values 
 unique_labels = np.unique(labels)
@@ -1100,12 +1100,12 @@ for i, label_i in enumerate(unique_labels):
             distance_matrix[i, j] = min_distance
 distance_matrix_df = pd.DataFrame(distance_matrix, index=unique_labels, columns=unique_labels)
 ```
-```
+```python
 average_sr_matrix = pd.DataFrame(index = average_sr_by_superid.index, columns = average_sr_by_superid.index)
 for i in average_sr_matrix.index:
     average_sr_matrix[i] = abs(average_sr_by_superid['SR'] - average_sr_by_superid['SR'][i])
 ```
-```
+```python
 def zscore(distance_matrix):
     upper_triangle = distance_matrix.where(np.triu(np.ones(distance_matrix.shape), k=1).astype(bool))
     
@@ -1119,30 +1119,29 @@ def zscore(distance_matrix):
     
     return zscore_matrix
 ```
-```
+```python
 distance_zscore = zscore(distance_matrix_df)
 average_sr_zscore = zscore(average_sr_matrix)
 correlation_zscore= zscore(correlation_pcage)
 ```
-```
+```python
 combined_df = weight_sr*average_sr_zscore + weight_dis*distance_zscore + weight_corr*correlation_zscore
 for i in range(len(combined_df)):
     combined_df.iat[i, i] = 0
 combined_df
 
 ```
-```
+```python
 combined_df = weight_sr*average_sr_zscore + weight_dis*distance_zscore + weight_corr*correlation_zscore
 for i in range(len(combined_df)):
     combined_df.iat[i, i] = 0
 combined_df
 ```
-```
+```python
 linkage_result = pd.DataFrame(clustering2.children_+1)
 new_node_index = average_sr_matrix.index.max()+1
 new_index = range(new_node_index, new_node_index + len(linkage_result))
 
-# 设置新的索引
 linkage_result.index = new_index
 cluster_cell = {}
 for i in result['result'].unique():
@@ -1151,7 +1150,7 @@ for i in linkage_result.index:
     cluster_cell[i] = cluster_cell[linkage_result.loc[i,0]].union(cluster_cell[linkage_result.loc[i,1]])
 
 ```
-```
+```python
 for i in linkage_result.index:
     plt.scatter(coor['imagecol'], coor['imagerow'],c = result['result'],alpha=0.5,s=1,label = result['result'])
     plt.scatter(coor['imagecol'][list(cluster_cell[linkage_result.loc[i,0]])], 
@@ -1175,7 +1174,7 @@ for i in linkage_result.index:
     plt.title((i,linkage_result.loc[i,0],linkage_result.loc[i,1]))
     plt.show()
 ```
-```
+```python
 for i in result['result'].unique():
     plt.scatter(coor['imagecol'], coor['imagerow'],c = result['result'],alpha=0.5,s=0.3,label = sr_re['re'])
     plt.scatter(coor['imagecol'][list(cluster_cell[i])], 
